@@ -2,7 +2,6 @@ import "~/styles/globals.css";
 
 import {Inter} from "next/font/google";
 
-import {TRPCReactProvider} from "~/trpc/react";
 import Navbar from "./_components/navbar";
 import {ThemeProvider} from "~/components/theme-provider"
 
@@ -29,7 +28,7 @@ export default function RootLayout({children}: {
 			enableSystem
 			disableTransitionOnChange>
 			<Navbar/>
-			<TRPCReactProvider>{children}</TRPCReactProvider>
+			{children}
 		</ThemeProvider>
 		</body>
 		</html>
