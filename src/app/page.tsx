@@ -4,7 +4,6 @@ import {Textarea} from "~/components/ui/textarea";
 import {z} from "zod";
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {useState} from "react"
 import {
 	Form,
 	FormControl,
@@ -20,8 +19,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select"
-import CopyLink from "./_components/copy-link"
 import {createContext} from "~/server/actions"
+import {toast} from "sonner"
+import CopyLink from "./_components/copy-link";
+import LinkTable from "./_components/link-table";
+import {useState} from "react";
 
 const formSchema = z.object({
 	content: z.string().min(2).max(50),
@@ -37,22 +39,33 @@ export default function Home() {
 			expireTime: "10"
 		},
 	})
-	const [contextID, setContextLink] = useState<string | null>(null)
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		// Do something with the form values.
 		// ✅ This will be type-safe and validated.
-		console.log(values)
+		// console.log(values)
 		const res = await createContext(values);
 		if (res !== null) {
-			setContextLink(res[0]?.id.toString() || null);
+			toast(<CopyLink title={'created context'} contextID={res?.[0]?.id.toString() || null}/>);
+
+			setContextList((prevState) => (
+				[
+					...prevState,
+					{
+						id: res?.[0]?.id.toString() as string,
+						title: res?.[0]?.content.substring(0, 8) as string
+					}
+				]
+			))
 		} else {
-			setContextLink(null);
+			toast("Some error occured");
 		}
 	}
 
+	const [contextList, setContextList] = useState<({ id: string, title: string })[]>([]);
+
 	return (
-		<main className={'p-10'}>
+		<main className={'p-10 max-w-4xl mx-auto'}>
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 					<FormField
@@ -98,12 +111,7 @@ export default function Home() {
 					<Button type="submit">Share</Button>
 				</form>
 			</Form>
-			{
-				contextID !== null &&
-                <div className={'my-7'}>
-                    <CopyLink contextID={contextID}/>
-                </div>
-			}
+			<LinkTable contexts={contextList}/>
 		</main>
 	);
 }
